@@ -16,7 +16,7 @@ export default function Index() {
     socket.emit("join_room", room);
   }
   useEffect(() => {
-    sendMessage()
+    sendMessage();
     fetch("/api/websocket").then((res) => {
       socket.on("received_message", (data) => {
         setmessages(data.message);
@@ -45,15 +45,13 @@ export default function Index() {
           padding: "1.5rem",
           fontSize: "1.5rem",
         }}
-        type={"number"}
         value={room}
-        min={0}
-        max={10}
         onChange={(e) => {
           console.log(room);
           setroom(Number(e.target.value));
         }}
       />
+      <p>ععع</p>
       <button onClick={sendMessage}>send message</button>
       <button onClick={joinroom}>join room</button>
       {<p>{messages}</p>}
