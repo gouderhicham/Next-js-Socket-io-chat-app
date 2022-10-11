@@ -53,7 +53,7 @@ export default function Index() {
       />
       <p>ععع</p>
       <button onClick={sendMessage}>send message</button>
-      <button onClick={joinroom}>join room</button>
+      <button style={{background : "green"}} onClick={joinroom}>join room</button>
       {<p>{messages}</p>}
     </>
   );
