@@ -1,8 +1,11 @@
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
+import { NextRequest } from "next/server";
+import { apps } from "../lib/firebase";
 let socket = io();
-export default function Index() {
+export default function Index({ ip }) {
+  console.log(ip);
   const [room, setroom] = useState(0);
   const [input, setinput] = useState("");
   const [messages, setmessages] = useState("");
@@ -53,9 +56,21 @@ export default function Index() {
       />
       <p>ععع</p>
       <button onClick={sendMessage}>send message</button>
-      <button style={{background : "green"}} onClick={joinroom}>join room</button>
+      <button style={{ background: "green" }} onClick={joinroom}>
+        join room
+      </button>
       {<p>{messages}</p>}
     </>
   );
 }
-//NOTE: what's the next step ?
+export async function getServerSideProps({ req }) {
+  const forwarded = req.headers["x-forwarded-for"];
+  const ip = forwarded
+    ? forwarded.split(/, /)[0]
+    : req.connection.remoteAddress;
+  return {
+    props: {
+      ip,
+    },
+  };
+}
