@@ -1,11 +1,23 @@
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
-import { NextRequest } from "next/server";
-import { apps } from "../lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "../lib/firebase";
 let socket = io();
 export default function Index({ ip }) {
-  console.log(ip);
+  async function getDatabs() {
+    const docRef = doc(db, "users", ip);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      console.log("user exists");
+    } else {
+      console.log("user dosn't exists and we created a new user with that ip");
+      await setDoc(doc(db, "users", ip), {
+        roomNumber: 1,
+      });
+    }
+  }
+  getDatabs();
   const [room, setroom] = useState(0);
   const [input, setinput] = useState("");
   const [messages, setmessages] = useState("");
