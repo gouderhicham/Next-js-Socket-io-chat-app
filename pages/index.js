@@ -5,13 +5,17 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useRouter } from "next/router";
 import ChatRoom from "../components/ChatRoom";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
+
 export let socket = io();
 export default function Index({ ip }) {
+  const [animationParent] = useAutoAnimate();
   const route = useRouter();
   const allRoomsIndex = ["🔥", "🌈", "❄", "🌊"];
   const [input, setinput] = useState("");
   const [user, setuser] = useState(null);
   const [messages, setmessages] = useState([]);
+  const [loading, setloading] = useState(true);
   //NOTE: we used useEffect twice with [] because we dont want to check if user exists on every msg sent
   useEffect(() => {
     async function getdata() {
@@ -53,29 +57,37 @@ export default function Index({ ip }) {
       <Head>
         <title>Suck it </title>
       </Head>
-      <main className="main">
+      <main
+        ref={animationParent}
+        style={{
+          gridTemplateColumns: `${!route.query.room ? "1fr 0fr" : ""}`,
+        }}
+        className="main"
+      >
         <div className="rooms-btns">
-          <h1>Rooms</h1>
+          <h1>Chat Rooms</h1>
           <div className="rooms-center">
             {allRoomsIndex.map((emoji, i) => (
               <button
                 key={i}
                 onClick={() => {
+                  setloading(true);
                   route.push({ query: { room: i + 1 } });
                   socket.emit("join_room", {
                     room: i + 1,
                   });
                 }}
               >
-                {emoji} Room {i + 1} {emoji}
+                Room {i + 1} {emoji}
               </button>
             ))}
           </div>
         </div>
-
         {route.query.room && (
           <ChatRoom
             ip={user?.ip}
+            setloading={setloading}
+            loading={loading}
             input={input}
             messages={messages}
             setinput={setinput}

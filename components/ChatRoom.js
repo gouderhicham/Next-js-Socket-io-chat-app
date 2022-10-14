@@ -4,10 +4,17 @@ import { socket } from "../pages/index";
 import { setDoc, doc, arrayUnion, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-
-const ChatRoom = ({ input, messages, setinput, user, ip }) => {
-  const [animationParent] = useAutoAnimate();
-
+import Loader from "../components/Loader";
+const ChatRoom = ({
+  input,
+  messages,
+  setinput,
+  user,
+  ip,
+  loading,
+  setloading,
+}) => {
+  const [pare] = useAutoAnimate();
   const [chatmessages, setchatmessages] = useState(messages);
   const lastMsg = useRef(null);
   const route = useRouter();
@@ -52,6 +59,7 @@ const ChatRoom = ({ input, messages, setinput, user, ip }) => {
         setchatmessages([]);
       }
     }
+    setloading(false);
   }, [route.query.room]);
   useEffect(() => {
     setchatmessages((old) => old.concat(messages));
@@ -67,6 +75,7 @@ const ChatRoom = ({ input, messages, setinput, user, ip }) => {
     <section className="msger">
       <header className="msger-header">
         <div className="msger-header-title">
+          {loading ? "loading..." : ""}
           <i className="fas fa-comment-alt"></i>🔥 Room N{route.query.room}
         </div>
         <div className="msger-header-options">
@@ -76,7 +85,7 @@ const ChatRoom = ({ input, messages, setinput, user, ip }) => {
         </div>
       </header>
 
-      <main ref={animationParent} className="msger-chat">
+      <main ref={pare} className="msger-chat">
         {chatmessages &&
           chatmessages?.map((msg, i) => (
             <div

@@ -44,6 +44,16 @@ body {
   grid-template-columns: 1fr 3fr;
   height: 100vh;
 }
+@media screen and (max-width: 1150px) {
+  .main {
+    grid-template-columns: 1fr 2fr;
+  }
+}
+@media screen and (max-width: 880px) {
+  .main {
+    grid-template-columns: 1.5fr 2fr;
+  }
+}
 /* NOTE: chatroom */
 .msger {
   display: flex;
@@ -51,7 +61,8 @@ body {
   justify-content: space-between;
   width: 100%;
   height: 100%;
-  overflow-y: scroll;
+  overflow-y: hidden;
+  overflow-x: hidden;
   border: var(--border);
   background: var(--msger-bg);
 }
@@ -66,17 +77,18 @@ body {
 
 .msger-chat {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
+  overflow-x: hidden;
   padding: 10px;
 }
 .msger-chat::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 .msger-chat::-webkit-scrollbar-track {
   background: #ddd;
 }
 .msger-chat::-webkit-scrollbar-thumb {
-  background: #bdbdbd;
+  background: #7a7a7a;
 }
 .msg {
   display: flex;
