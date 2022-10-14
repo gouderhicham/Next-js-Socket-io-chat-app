@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 const ioHandler = (req, res) => {
+  let user_room;
   if (res.socket.server.io) {
     console.log("Socket is already running");
   } else {
@@ -8,11 +9,23 @@ const ioHandler = (req, res) => {
     res.socket.server.io = io;
     io.on("connection", (socket) => {
       socket.on("join_room", (data) => {
-        socket.join(data);
+        //NOTE: leave all rooms
+        Array.from(socket.rooms).forEach((ro) => {
+          if (ro !== Array.from(socket.rooms)[0]) {
+            socket.leave(ro);
+          }
+        });
+        user_room = data.room;
+        //NOTE: join specific room
+        socket.join(data.room);
+        console.log(
+          `joined room ${user_room} , all rooms = ${Array.from(socket.rooms)}`
+        );
+        socket.emit("joined_room", `joined room N${data.room}`);
       });
       socket.on("send_message", (data) => {
-        console.log(data);
-        io.sockets.to(data.room).emit("received_message", data);
+        io.sockets.to(user_room).emit("message_received", data);
+        console.log(user_room, data);
       });
     });
   }
@@ -24,7 +37,5 @@ export const config = {
   },
 };
 export default ioHandler;
-
 // TODO: look for the active users
-// TODO: when clicking on a user icon, create automaticly a room between those two
-// TODO: create a room automaticly on page load from the room id stored on both users accounts on firebase
+// TODO: join room automaticly on page load
