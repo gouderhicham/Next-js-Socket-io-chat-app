@@ -16,6 +16,7 @@ export default function Index({ ip }) {
   const [user, setuser] = useState(null);
   const [messages, setmessages] = useState([]);
   const [loading, setloading] = useState(true);
+  const [toggled, settoggled] = useState(false);
   //NOTE: we used useEffect twice with [] because we dont want to check if user exists on every msg sent
   useEffect(() => {
     async function getdata() {
@@ -57,12 +58,20 @@ export default function Index({ ip }) {
       <Head>
         <title>Suck it </title>
       </Head>
+      <button
+        onClick={() => {
+          settoggled((old) => !old);
+        }}
+        className="rooms_toggler"
+      >
+        Show rooms
+      </button>
       <main
         ref={animationParent}
         style={{
           gridTemplateColumns: `${!route.query.room ? "1fr 0fr" : ""}`,
         }}
-        className="main"
+        className={`main ${toggled ? "toggled" : "not-toggled"}`}
       >
         <div className="rooms-btns">
           <h1>Chat Rooms</h1>
@@ -71,7 +80,9 @@ export default function Index({ ip }) {
               <button
                 key={i}
                 onClick={() => {
-                  setloading(true);
+                  if (Number(route.query.room) !== i + 1) {
+                    setloading(true);
+                  }
                   route.push({ query: { room: i + 1 } });
                   socket.emit("join_room", {
                     room: i + 1,

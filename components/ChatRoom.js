@@ -4,7 +4,6 @@ import { socket } from "../pages/index";
 import { setDoc, doc, arrayUnion, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-import Loader from "../components/Loader";
 const ChatRoom = ({
   input,
   messages,
@@ -55,11 +54,12 @@ const ChatRoom = ({
       );
       if (data.exists()) {
         setchatmessages(data.data().users_message);
+        setloading(false);
       } else {
         setchatmessages([]);
+        setloading(false);
       }
     }
-    setloading(false);
   }, [route.query.room]);
   useEffect(() => {
     setchatmessages((old) => old.concat(messages));
