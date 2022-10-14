@@ -13,6 +13,12 @@
 body {
   background-color: rgb(3, 1, 34);
 }
+.main {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr 3fr;
+  height: 100vh;
+}
 .rooms-btns button {
   padding: 1rem 1.5rem;
   background-color: rgb(9, 160, 115);
@@ -22,6 +28,9 @@ body {
   border: none;
   cursor: pointer;
   border-radius: 1rem;
+}
+.rooms-btns {
+  width: 100%;
 }
 .rooms-btns h1 {
   border-bottom: 3px solid white;
@@ -38,12 +47,7 @@ body {
   justify-content: center;
   margin: 0 4rem;
 }
-.main {
-  display: grid;
-  width: 100%;
-  grid-template-columns: 1fr 3fr;
-  height: 100vh;
-}
+
 @media screen and (max-width: 1150px) {
   .main {
     grid-template-columns: 1fr 2fr;
@@ -61,7 +65,7 @@ body {
 @media screen and (max-width: 850px) {
   .rooms_toggler {
     opacity: 1;
-    left: 0rem;
+    right: 0rem;
     top: 0rem;
     cursor: pointer;
     padding: 0.8rem 1.4rem;
@@ -70,14 +74,20 @@ body {
     font-weight: bold;
     color: white;
     border: none;
-    border-top-right-radius: 20px;
-    border-bottom-right-radius: 20px;
+    border-top-left-radius: 20px;
+    border-bottom-left-radius: 20px;
   }
   .toggled {
-    grid-template-columns: 1fr 0fr !important;
+    width: 100%;
   }
   .not-toggled {
-    grid-template-columns: 0fr 1fr !important;
+    width: 0;
+  }
+  .hun {
+    grid-template-columns: 1fr 0fr;
+  }
+  .zero {
+    grid-template-columns: 0fr 1fr;
   }
 }
 

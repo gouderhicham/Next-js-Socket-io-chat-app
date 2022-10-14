@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useLayoutEffect } from "react";
 import io from "socket.io-client";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
@@ -53,6 +53,18 @@ export default function Index({ ip }) {
       ]);
     });
   }
+  function useWindowSize() {
+    const [size, setSize] = useState([0, 0]);
+    useLayoutEffect(() => {
+      function updateSize() {
+        setSize([window.innerWidth]);
+      }
+      window.addEventListener("resize", updateSize);
+      updateSize();
+      return () => window.removeEventListener("resize", updateSize);
+    }, []);
+    return size;
+  }
   return (
     <>
       <Head>
@@ -68,18 +80,18 @@ export default function Index({ ip }) {
       </button>
       <main
         ref={animationParent}
-        style={{
-          gridTemplateColumns: `${!route.query.room ? "1fr 0fr" : ""}`,
-        }}
-        className={`main ${toggled ? "toggled" : "not-toggled"}`}
+        className={`main ${toggled ? "zero" : "hun"}`}
       >
-        <div className="rooms-btns">
+        <div
+          className={`rooms-btns ${toggled ? "not-toggled" : "toggled"}`}
+        >
           <h1>Chat Rooms</h1>
           <div className="rooms-center">
             {allRoomsIndex.map((emoji, i) => (
               <button
                 key={i}
                 onClick={() => {
+                  settoggled(true);
                   if (Number(route.query.room) !== i + 1) {
                     setloading(true);
                   }
