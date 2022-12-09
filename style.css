@@ -58,6 +58,11 @@ body {
     grid-template-columns: 1.5fr 2fr;
   }
 }
+@media screen and (max-width: 660px) {
+  .main {
+    height: 93vh;
+  }
+}
 .rooms_toggler {
   position: absolute;
   opacity: 0;

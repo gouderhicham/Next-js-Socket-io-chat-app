@@ -1,7 +1,14 @@
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import { socket } from "../pages/index";
-import { setDoc, doc, arrayUnion, updateDoc, getDoc } from "firebase/firestore";
+import {
+  setDoc,
+  doc,
+  arrayUnion,
+  onSnapshot,
+  updateDoc,
+  getDoc,
+} from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 const ChatRoom = ({
@@ -16,7 +23,9 @@ const ChatRoom = ({
   const [pare] = useAutoAnimate();
   const [chatmessages, setchatmessages] = useState(messages);
   const lastMsg = useRef(null);
+  const [number, setnumber] = useState(0);
   const route = useRouter();
+
   async function handleSubmit(e) {
     e.preventDefault();
     setinput("");
@@ -28,6 +37,7 @@ const ChatRoom = ({
     const data = await getDoc(
       doc(db, "rooms", `room_${route.query.room}_messages`)
     );
+
     if (!data.exists()) {
       await setDoc(doc(db, "rooms", `room_${route.query.room}_messages`), {
         users_message: arrayUnion({
@@ -46,29 +56,20 @@ const ChatRoom = ({
       });
     }
   }
+
   useEffect(() => {
-    getChat();
-    async function getChat() {
-      let data = await getDoc(
-        doc(db, "rooms", `room_${route.query.room}_messages`)
-      );
-      if (data.exists()) {
-        setchatmessages(data.data().users_message);
-        setloading(false);
-      } else {
-        setchatmessages([]);
-        setloading(false);
-      }
-    }
+    getChat(route, setchatmessages, setloading);
   }, [route.query.room]);
   useEffect(() => {
     setchatmessages((old) => old.concat(messages));
     if (lastMsg.current !== null) {
-      lastMsg.current.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-        inline: "end",
-      });
+      setTimeout(() => {
+        lastMsg.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+          inline: "end",
+        });
+      }, 50);
     }
   }, [messages]);
   return (
@@ -120,3 +121,15 @@ const ChatRoom = ({
 };
 
 export default ChatRoom;
+async function getChat(route, setchatmessages, setloading) {
+  let data = await getDoc(
+    doc(db, "rooms", `room_${route.query.room}_messages`)
+  );
+  if (data.exists()) {
+    setchatmessages(data.data().users_message);
+    setloading(false);
+  } else {
+    setchatmessages([]);
+    setloading(false);
+  }
+}

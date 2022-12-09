@@ -24,11 +24,10 @@ export default function Index({ ip }) {
       setuser(ge);
     }
     getdata();
-  }, []);
-  // NOTE: function that do all the messaging work
-  useEffect(() => {
     InitializeSocket();
   }, []);
+  
+  // NOTE: function that do all the messaging work
   async function InitializeSocket() {
     await fetch("api/websocket");
     // NOTE: join room on page load
@@ -53,18 +52,6 @@ export default function Index({ ip }) {
       ]);
     });
   }
-  function useWindowSize() {
-    const [size, setSize] = useState([0, 0]);
-    useLayoutEffect(() => {
-      function updateSize() {
-        setSize([window.innerWidth]);
-      }
-      window.addEventListener("resize", updateSize);
-      updateSize();
-      return () => window.removeEventListener("resize", updateSize);
-    }, []);
-    return size;
-  }
   return (
     <>
       <Head>
@@ -82,9 +69,7 @@ export default function Index({ ip }) {
         ref={animationParent}
         className={`main ${toggled ? "zero" : "hun"}`}
       >
-        <div
-          className={`rooms-btns ${toggled ? "not-toggled" : "toggled"}`}
-        >
+        <div className={`rooms-btns ${toggled ? "not-toggled" : "toggled"}`}>
           <h1>Chat Rooms</h1>
           <div className="rooms-center">
             {allRoomsIndex.map((emoji, i) => (

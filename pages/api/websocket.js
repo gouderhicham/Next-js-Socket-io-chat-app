@@ -10,6 +10,7 @@ const ioHandler = (req, res) => {
     io.on("connection", (socket) => {
       socket.on("join_room", (data) => {
         //NOTE: leave all rooms
+        console.log(socket.rooms);
         Array.from(socket.rooms).forEach((ro) => {
           if (ro !== Array.from(socket.rooms)[0]) {
             socket.leave(ro);
@@ -24,8 +25,7 @@ const ioHandler = (req, res) => {
         socket.emit("joined_room", `joined room N${data.room}`);
       });
       socket.on("send_message", (data) => {
-        io.sockets.to(user_room).emit("message_received", data);
-        console.log(user_room, data);
+        io.emit("message_received", data);
       });
     });
   }
@@ -38,4 +38,3 @@ export const config = {
 };
 export default ioHandler;
 // TODO: look for the active users
-// TODO: join room automaticly on page load
