@@ -1,61 +1,90 @@
 import Head from "next/head";
-import { useEffect, useState, useLayoutEffect } from "react";
-import io from "socket.io-client";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import {
+  arrayUnion,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  where,
+} from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useRouter } from "next/router";
 import ChatRoom from "../components/ChatRoom";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 
-export let socket = io();
 export default function Index({ ip }) {
   const [animationParent] = useAutoAnimate();
   const route = useRouter();
-  const allRoomsIndex = ["🔥", "🌈", "❄", "🌊"];
+  const [created, setCreated] = useState(false);
+  const [link, setLink] = useState("");
+  async function getRooms() {
+    const q = query(collection(db, "rooms"), where("private", "==", true));
+    const docSnap = await getDocs(q);
+    docSnap.forEach((doc) => {
+      console.log(doc.data());
+    });
+  }
+  useEffect(() => {
+    getRooms();
+  }, []);
+  const [allRoomsIndex, setAllRoomsIndex] = useState([]);
   const [input, setinput] = useState("");
   const [user, setuser] = useState(null);
-  const [messages, setmessages] = useState([]);
+  const [roomInput, setRoomInput] = useState({
+    roomName: "",
+    private: false,
+  });
   const [loading, setloading] = useState(true);
   const [toggled, settoggled] = useState(false);
-  //NOTE: we used useEffect twice with [] because we dont want to check if user exists on every msg sent
+  const addRoom = () => {
+    if (!created && !roomInput.private) {
+      setAllRoomsIndex((old) => [...old, roomInput]);
+      setCreated(true);
+    } else if (!created && roomInput.private) {
+      // add room to the database
+      setCreated(true);
+      route.push({ query: { room: roomInput.roomName } });
+      settoggled(true);
+      setLink(window.location.href);
+    } else {
+      alert("you are allowed to create a room only once");
+    }
+    setRoomInput((old) => ({ ...old, roomName: "" }));
+    console.log(window.location.href);
+  };
   useEffect(() => {
     async function getdata() {
       let ge = await getDatabs(ip);
       setuser(ge);
+      const q = query(
+        collection(db, "rooms_copy"),
+        where("private", "==", false)
+      );
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((gr) =>
+        setAllRoomsIndex((old) => [...old, gr.data()])
+        
+      );
+      console.log(allRoomsIndex);
     }
     getdata();
-    InitializeSocket();
   }, []);
-  
-  // NOTE: function that do all the messaging work
-  async function InitializeSocket() {
-    await fetch("api/websocket");
-    // NOTE: join room on page load
-    if (route.query.room) {
-      socket.emit("join_room", {
-        room: route.query.room,
+  async function getRoomsFromDataBase(room) {
+    let document = await getDoc(doc(db, "rooms_copy", `${room.roomName}`));
+    if (!document.exists()) {
+      await setDoc(doc(db, "rooms_copy", `${room.roomName}`), {
+        private: room.private,
+        roomName: room.roomName,
       });
     }
-    // NOTE: show room number on joining
-    socket.on("joined_room", (data) => {
-      console.log(data);
-    });
-    // NOTE: reaction to receiving message from the user
-    socket.on("message_received", (data) => {
-      setmessages([
-        ...messages,
-        {
-          message: data.message,
-          ip: data.ip,
-          profileImage: data.profileImage,
-        },
-      ]);
-    });
   }
   return (
     <>
       <Head>
-        <title>Suck it </title>
+        <title>Chat app | Gouder Hicham</title>
       </Head>
       <button
         onClick={() => {
@@ -72,32 +101,83 @@ export default function Index({ ip }) {
         <div className={`rooms-btns ${toggled ? "not-toggled" : "toggled"}`}>
           <h1>Chat Rooms</h1>
           <div className="rooms-center">
-            {allRoomsIndex.map((emoji, i) => (
-              <button
-                key={i}
-                onClick={() => {
-                  settoggled(true);
-                  if (Number(route.query.room) !== i + 1) {
-                    setloading(true);
-                  }
-                  route.push({ query: { room: i + 1 } });
-                  socket.emit("join_room", {
-                    room: i + 1,
-                  });
-                }}
-              >
-                Room {i + 1} {emoji}
+            {allRoomsIndex.map((room) => {
+              getRoomsFromDataBase(room);
+              return (
+                <button
+                  key={room.roomName}
+                  className={room.roomName}
+                  onClick={() => {
+                    settoggled(true);
+                    if (route.query.room !== room.roomName) {
+                      setloading(true);
+                    }
+                    route.push({ query: { room: room.roomName } });
+                  }}
+                >
+                  {room.roomName}
+                </button>
+              );
+            })}
+            <div
+              style={{ display: "flex", flexDirection: "row", width: "100%" }}
+            >
+              <input
+                type={"text"}
+                value={roomInput.roomName}
+                onChange={(e) =>
+                  setRoomInput((old) => ({ ...old, roomName: e.target.value }))
+                }
+                className="input_add"
+              />
+              <button onClick={addRoom} className="input_add_button">
+                <img src="/add.png" />{" "}
               </button>
-            ))}
+            </div>
+            <div className="checkboxes">
+              <div className="input-input">
+                <input
+                  type="checkbox"
+                  name="private"
+                  checked={roomInput.private}
+                  onChange={(e) => {
+                    setRoomInput((old) => ({
+                      ...old,
+                      private: e.target.checked,
+                    }));
+                  }}
+                />
+                <label style={{ color: "white" }} htmlFor="private">
+                  private
+                </label>
+              </div>
+              <div className="input-input">
+                <input
+                  type="checkbox"
+                  name="publice"
+                  checked={!roomInput.private}
+                  onChange={(e) => {
+                    setRoomInput((old) => ({
+                      ...old,
+                      private: !e.target.checked,
+                    }));
+                  }}
+                />
+                <label style={{ color: "white" }} htmlFor="public">
+                  public
+                </label>
+              </div>
+            </div>
           </div>
         </div>
         {route.query.room && (
           <ChatRoom
+            setLink={setLink}
+            link={link}
             ip={user?.ip}
             setloading={setloading}
             loading={loading}
             input={input}
-            messages={messages}
             setinput={setinput}
             user={user}
           />
