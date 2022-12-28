@@ -1,7 +1,6 @@
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import {
-  arrayUnion,
   collection,
   doc,
   getDoc,
@@ -20,19 +19,9 @@ export default function Index({ ip }) {
   const route = useRouter();
   const [created, setCreated] = useState(false);
   const [link, setLink] = useState("");
-  async function getRooms() {
-    const q = query(collection(db, "rooms"), where("private", "==", true));
-    const docSnap = await getDocs(q);
-    docSnap.forEach((doc) => {
-      console.log(doc.data());
-    });
-  }
-  useEffect(() => {
-    getRooms();
-  }, []);
+
   const [allRoomsIndex, setAllRoomsIndex] = useState([]);
   const [input, setinput] = useState("");
-  const [user, setuser] = useState(null);
   const [roomInput, setRoomInput] = useState({
     roomName: "",
     private: false,
@@ -53,12 +42,9 @@ export default function Index({ ip }) {
       alert("you are allowed to create a room only once");
     }
     setRoomInput((old) => ({ ...old, roomName: "" }));
-    console.log(window.location.href);
   };
   useEffect(() => {
     async function getdata() {
-      let ge = await getDatabs(ip);
-      setuser(ge);
       const q = query(
         collection(db, "rooms_copy"),
         where("private", "==", false)
@@ -66,9 +52,7 @@ export default function Index({ ip }) {
       const querySnapshot = await getDocs(q);
       querySnapshot.forEach((gr) =>
         setAllRoomsIndex((old) => [...old, gr.data()])
-        
       );
-      console.log(allRoomsIndex);
     }
     getdata();
   }, []);
@@ -174,12 +158,11 @@ export default function Index({ ip }) {
           <ChatRoom
             setLink={setLink}
             link={link}
-            ip={user?.ip}
+            ip={ip}
             setloading={setloading}
             loading={loading}
             input={input}
             setinput={setinput}
-            user={user}
           />
         )}
       </main>
@@ -196,24 +179,4 @@ export async function getServerSideProps({ req }) {
       ip: ip || null,
     },
   };
-}
-async function getDatabs(ip) {
-  let r = (Math.random() + 1).toString(36).substring(7);
-  let image = `https://api.multiavatar.com/${r}.svg`;
-  const docRef = doc(db, "users", ip);
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
-    console.log("user exists");
-  } else {
-    if (ip === null)
-      console.log(
-        `user dosn't exists and we created a new user with ip of ${ip} and profile image ${image}`
-      );
-    await setDoc(doc(db, "users", ip), {
-      roomNumber: 1,
-      profileImage: image,
-      ip: ip,
-    });
-  }
-  return docSnap.data();
 }

@@ -10,17 +10,21 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-const ChatRoom = ({ link, input, setinput, user, ip, loading,setLink,setloading }) => {
+const ChatRoom = ({
+  link,
+  input,
+  setinput,
+  ip,
+  loading,
+  setLink,
+  setloading,
+}) => {
   const [pare] = useAutoAnimate();
   const [chatmessages, setchatmessages] = useState();
   const lastMsg = useRef(null);
   const route = useRouter();
-
+  const image = `https://api.multiavatar.com/${ip}.svg`;
   async function handleSubmit(e) {
-    if (ip === null) {
-      alert("your ip is not stored yet please refresh page ");
-    }
-    if (ip === null) return;
     e.preventDefault();
     const data = await getDoc(
       doc(db, "rooms", `room_${route.query.room}_messages`)
@@ -30,7 +34,7 @@ const ChatRoom = ({ link, input, setinput, user, ip, loading,setLink,setloading 
         [route.query.room]: arrayUnion({
           ip: ip,
           message: input,
-          profileImage: user?.profileImage,
+          profileImage: `https://api.multiavatar.com/${ip}.svg`,
         }),
       });
     } else {
@@ -38,11 +42,10 @@ const ChatRoom = ({ link, input, setinput, user, ip, loading,setLink,setloading 
         [route.query.room]: arrayUnion({
           ip: ip,
           message: input,
-          profileImage: user?.profileImage,
+          profileImage: image,
         }),
       });
     }
-
     setinput("");
   }
   useEffect(() => {
@@ -77,10 +80,10 @@ const ChatRoom = ({ link, input, setinput, user, ip, loading,setLink,setloading 
             <>
               {link ? (
                 <p
-                  onClick={(e) => {
-                    console.log(e.target.textContent);
+                  onClick={() => {
                     navigator.clipboard.writeText(window.location.href);
-                    setLink(null)
+                    alert("link copied");
+                    setLink(null);
                   }}
                   style={{
                     padding: "0.4rem 0.2rem",
