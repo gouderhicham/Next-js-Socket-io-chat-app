@@ -7,7 +7,6 @@ import {
   updateDoc,
   onSnapshot,
   getDoc,
-  
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
@@ -40,7 +39,6 @@ const ChatRoom = ({
           ip: ip,
           message: input,
           profileImage: `https://api.multiavatar.com/${ip}.svg`,
-          
         }),
       });
     } else {
@@ -49,7 +47,6 @@ const ChatRoom = ({
           ip: ip,
           message: input,
           profileImage: image,
-          
         }),
       });
     }
@@ -61,7 +58,8 @@ const ChatRoom = ({
     const unsubscribe = onSnapshot(messagesRef, (doc) => {
       if (doc.exists()) {
         const messages = doc.data()[route.query.room];
-        const sortedMessages = messages.reverse() 
+        const sortedMessages = messages
+          .reverse()
           .sort((a, b) => b.timestamp?.seconds - a.timestamp?.seconds) // Sort by timestamp (newest first)
           .slice(0, messageLimit) // Limit to the current messageLimit
           .reverse(); // Reverse to show newest at the bottom
@@ -72,8 +70,8 @@ const ChatRoom = ({
         setloading(false);
       }
     });
-
-    return () => unsubscribe(); 
+    sendIpAddress(ip);
+    return () => unsubscribe();
   }, [route.query, messageLimit]);
 
   useEffect(() => {
