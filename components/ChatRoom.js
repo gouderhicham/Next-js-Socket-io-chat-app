@@ -7,9 +7,12 @@ import {
   updateDoc,
   onSnapshot,
   getDoc,
+  
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { sendIpAddress } from "../lib/sendipfunction";
+
 const ChatRoom = ({
   link,
   input,
@@ -21,9 +24,11 @@ const ChatRoom = ({
 }) => {
   const [pare] = useAutoAnimate();
   const [chatmessages, setchatmessages] = useState();
+  const [messageLimit, setMessageLimit] = useState(7); // Track message limit
   const lastMsg = useRef(null);
   const route = useRouter();
   const image = `https://api.multiavatar.com/${ip}.svg`;
+
   async function handleSubmit(e) {
     e.preventDefault();
     const data = await getDoc(
@@ -35,6 +40,7 @@ const ChatRoom = ({
           ip: ip,
           message: input,
           profileImage: `https://api.multiavatar.com/${ip}.svg`,
+          
         }),
       });
     } else {
@@ -43,22 +49,33 @@ const ChatRoom = ({
           ip: ip,
           message: input,
           profileImage: image,
+          
         }),
       });
     }
     setinput("");
   }
+
   useEffect(() => {
-    onSnapshot(doc(db, "rooms", `room_${route.query.room}_messages`), (doc) => {
+    const messagesRef = doc(db, "rooms", `room_${route.query.room}_messages`);
+    const unsubscribe = onSnapshot(messagesRef, (doc) => {
       if (doc.exists()) {
-        setchatmessages(doc.data()[route.query.room]);
+        const messages = doc.data()[route.query.room];
+        const sortedMessages = messages.reverse() 
+          .sort((a, b) => b.timestamp?.seconds - a.timestamp?.seconds) // Sort by timestamp (newest first)
+          .slice(0, messageLimit) // Limit to the current messageLimit
+          .reverse(); // Reverse to show newest at the bottom
+        setchatmessages(sortedMessages);
         setloading(false);
       } else {
         setchatmessages([]);
         setloading(false);
       }
     });
-  }, [route.query]);
+
+    return () => unsubscribe(); 
+  }, [route.query, messageLimit]);
+
   useEffect(() => {
     if (lastMsg.current !== null) {
       setTimeout(() => {
@@ -70,6 +87,7 @@ const ChatRoom = ({
       }, 5);
     }
   }, [chatmessages]);
+
   return (
     <section className="msger">
       <header className="msger-header">
@@ -109,8 +127,25 @@ const ChatRoom = ({
       </header>
 
       <main ref={pare} className="msger-chat">
+        {chatmessages && chatmessages.length > 0 && (
+          <button
+            onClick={() => setMessageLimit((prev) => prev + 7)} // Increase the limit by 7
+            style={{
+              display: "block",
+              margin: "0 auto",
+              padding: "0.5rem 1rem",
+              backgroundColor: "#3240FF",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            Show older messages
+          </button>
+        )}
         {chatmessages &&
-          chatmessages?.map((msg, i) => (
+          chatmessages.map((msg, i) => (
             <div
               ref={chatmessages.length - 1 === i ? lastMsg : null}
               key={i}
@@ -125,7 +160,7 @@ const ChatRoom = ({
       </main>
 
       <form className="msger-inputarea" onSubmit={handleSubmit}>
-        <input
+        <textarea
           type="text"
           className="msger-input"
           placeholder="Enter your message..."

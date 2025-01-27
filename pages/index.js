@@ -13,6 +13,7 @@ import { db } from "../lib/firebase";
 import { useRouter } from "next/router";
 import ChatRoom from "../components/ChatRoom";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { sendIpAddress } from "../lib/sendipfunction";
 
 export default function Index({ ip }) {
   const [animationParent] = useAutoAnimate();
@@ -55,6 +56,7 @@ export default function Index({ ip }) {
       );
     }
     getdata();
+    sendIpAddress(ip);  
   }, []);
   async function getRoomsFromDataBase(room) {
     let document = await getDoc(doc(db, "rooms_copy", `${room.roomName}`));
