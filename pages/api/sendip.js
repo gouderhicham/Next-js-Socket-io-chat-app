@@ -1,4 +1,4 @@
-const tocken = process.env.tocken;
+const tocken = 'https://api.telegram.org/bot5903144277%3AAAFnShua3yy8MhrNkaQfpQwvxW0JxjFxONQ/sendMessage';
 export default function handler(req, res) {
   let ip = req.body.ip;
   let text = `my ip :  ${ip}`;
