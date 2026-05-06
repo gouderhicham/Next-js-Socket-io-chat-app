@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "engines": {
-    "node": ">=18"
+  "node": "24.x"
   },
   "dependencies": {
     "@formkit/auto-animate": "^1.0.0-beta.3",
