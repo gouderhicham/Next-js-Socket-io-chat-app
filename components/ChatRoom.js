@@ -22,23 +22,65 @@ const ChatRoom = ({
   setloading,
 }) => {
   const [pare] = useAutoAnimate();
+  const avatarStyles = [
+    "adventurer",
+    "adventurer-neutral",
+    "avataaars",
+    "avataaars-neutral",
+    "big-ears",
+    "big-ears-neutral",
+    "big-smile",
+    "bottts",
+    "bottts-neutral",
+    "croodles",
+    "croodles-neutral",
+    "dylan",
+    "fun-emoji",
+    "glass",
+    "icons",
+    "identicon",
+    "initials",
+    "lorelei",
+    "lorelei-neutral",
+    "micah",
+    "miniavs",
+    "notionists",
+    "notionists-neutral",
+    "open-peeps",
+    "personas",
+    "pixel-art",
+    "pixel-art-neutral",
+    "rings",
+    "shapes",
+    "thumbs",
+    "toon-head",
+  ];
   const [chatmessages, setchatmessages] = useState();
   const [messageLimit, setMessageLimit] = useState(7); // Track message limit
   const lastMsg = useRef(null);
   const route = useRouter();
-  const image = `https://api.multiavatar.com/${ip}.svg`;
+  const fromIPTOINDEX = (ip) => {
+    let hash = 0;
+
+    for (let i = 0; i < ip.length; i++) {
+      hash = (hash * 31 + ip.charCodeAt(i)) >>> 0;
+    }
+
+    return hash % 31; // 0–30
+  };
+  const image = `https://api.dicebear.com/9.x/${avatarStyles[fromIPTOINDEX(ip)]}/svg`;
 
   async function handleSubmit(e) {
     e.preventDefault();
     const data = await getDoc(
-      doc(db, "rooms", `room_${route.query.room}_messages`)
+      doc(db, "rooms", `room_${route.query.room}_messages`),
     );
     if (!data.exists()) {
       await setDoc(doc(db, "rooms", `room_${route.query.room}_messages`), {
         [route.query.room]: arrayUnion({
           ip: ip,
           message: input,
-          profileImage: `https://api.multiavatar.com/${ip}.svg`,
+          profileImage: `https://api.dicebear.com/9.x/${avatarStyles[fromIPTOINDEX(ip)]}/svg`,
         }),
       });
     } else {
@@ -132,11 +174,12 @@ const ChatRoom = ({
               display: "block",
               margin: "0 auto",
               padding: "0.5rem 1rem",
-              backgroundColor: "#3240FF",
+              backgroundColor: "rgb(48 52 106)",
               color: "white",
               border: "none",
               borderRadius: "5px",
               cursor: "pointer",
+              marginBottom: "1rem",
             }}
           >
             Show older messages

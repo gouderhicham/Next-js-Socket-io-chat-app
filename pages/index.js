@@ -56,15 +56,7 @@ export default function Index({ ip }) {
       );
     }
     getdata();
-    fetch("https://api.ipify.org?format=json")
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data.ip);
-        sendIpAddress(data.ip);
-      })
-      .catch((error) => {
-        console.error("Error fetching IP address:", error);
-      });
+    sendIpAddress(ip);  
   }, []);
   async function getRoomsFromDataBase(room) {
     let document = await getDoc(doc(db, "rooms_copy", `${room.roomName}`));
@@ -99,7 +91,7 @@ export default function Index({ ip }) {
               getRoomsFromDataBase(room);
               return (
                 <button
-                  key={Math.random()}
+                  key={room.roomName}
                   className={room.roomName}
                   onClick={() => {
                     settoggled(true);
